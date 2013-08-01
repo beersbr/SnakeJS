@@ -1,0 +1,234 @@
+<html>
+<head>
+	<title>Snake</title>
+<script type="text/javascript" src="./scripts/linkedlist.js"></script>
+<script type="text/javascript" src="./scripts/keyhandler.js"></script>
+<script type="text/javascript">
+
+requestAnimFrame = (function() {
+    return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(/* function FrameRequestCallback */ callback, /* DOMElement Element */ element) {
+            window.setTimeout(callback, 1000/60);
+        };
+})();
+
+function Fruit(args)
+{
+	if(args == undefined) args = {};
+
+	this.x = args.x || 0;
+	this.y = args.y || 0;
+
+	this.vx = args.vx || 0;
+	this.vy = args.vy || 0;
+
+	this.w = args.w || 0;
+	this.h = args.h || 0;
+
+	this.hw = args.w || 0;
+	this.hh = args.h || 0;
+
+	this.Draw = function(context)
+	{
+		if(!(!!context))
+			throw "Fruit::Draw(context) => context is falsey value";
+	}
+
+	this.Update = function(elapsed_time, args)
+	{
+		if(!(!!elapsed_time))
+			throw "Fruit::Update(elapsed_time) => elapsed_time is falsey value";
+	}
+}
+
+function SnakeNode(args)
+{
+	if(args == undefined) args = {};
+
+	this.x = args.x || 0;
+	this.y = args.y || 0;
+
+	this.vx = args.vx || 0;
+	this.vy = args.vy || 0;
+
+	this.w = args.w || 0;
+	this.h = args.h || 0;
+
+	this.hw = args.w || 0;
+	this.hh = args.h || 0;
+
+	// this must be a SnakeNode
+	this.parent = args.parent || null;
+	this.next = args.child || null;
+
+	this.Draw = function(context)
+	{
+		if(!(!!context))
+			throw "SnakeNode::Draw(context) => context is falsey value";
+	}
+
+	this.Update = function(elapsed_time, args)
+	{
+		if(!(!!elapsed_time))
+			throw "SnakeNode::Update(elapsed_time) => elapsed_time is falsey value";
+	}
+}
+
+
+function SnakeNodeHead(args)
+{
+	if(args == undefined) args = {};
+
+	this.x = args.x || 0;
+	this.y = args.y || 0;
+
+	this.w = args.w || 0;
+	this.h = args.h || 0;
+
+	this.hw = args.w/2 || 0;
+	this.hh = args.h/2 || 0;
+
+	this.vx = args.vx || 3.0;
+	this.vy = args.vy || 0.0;
+
+	this.children = [];
+
+	// this is a SnakeNode
+	this.lastChild = null;
+
+	this.vertecies = []; // x,y tuple
+
+
+	this.Draw = function(context)
+	{
+		if(!(!!context))
+			throw "SnakeNodeHead::Draw(context) => context is falsey value";
+
+		context.save();
+		context.fillStyle = "rgb(255, 255, 255)";
+		context.fillRect((this.x-this.hw), (this.y-this.hh), this.w, this.h);
+
+		context.restore();
+	}
+
+	this.Update = function(elapsed_time, args)
+	{
+		if(elapsed_time != 0)
+		if(!(!!elapsed_time))
+			throw "SnakeNodeHead::Update(elapsed_time, args) => elapsed_time is falsey value";
+
+		if(!(!!args.keyboard))
+			throw "SnakeNodeHead::Update(elapsed_time, args) => args.keyboard is falsey";
+
+		this.x += this.vx;
+		this.y += this.vy;
+
+
+		if(args.keyboard.keyIsDown('a'))
+		{
+			if(this.vy != 0.0)
+			{
+				this.vx = -3.0;
+				this.vy = 0.0;
+			}
+		}
+		if(args.keyboard.keyIsDown('d'))
+		{
+			if(this.vy != 0.0)
+			{
+				this.vx = 3.0;
+				this.vy = 0.0;
+			}
+		}
+		if(args.keyboard.keyIsDown('w'))
+		{
+			if(this.vx != 0.0)
+			{
+				this.vx = 0.0;
+				this.vy = -3.0;
+			}
+		}
+		if(args.keyboard.keyIsDown('s'))
+		{
+			if(this.vx != 0.0)
+			{
+				this.vx = 0.0;
+				this.vy = 3.0;
+			}
+		}
+	}
+}
+
+GAME = {};
+GAME.entities = [];
+
+GAME.width = 800;
+GAME.height = 600;
+
+GAME.Setup = function()
+{
+	GAME.canvas = document.getElementById("canvas");
+	GAME.context = GAME.canvas.getContext('2d');
+
+	GAME.context.fillStyle = "rgb(0, 0, 0)";
+	GAME.context.fillRect(0, 0, 800, 600);
+	GAME.currentTime = +(new Date());
+
+	GAME.keyboard = new KeyboardHandler();
+
+	var snakeHead = new SnakeNodeHead({
+		x: GAME.width/2 - 10,
+		y: GAME.height/2 - 10,
+		w: 20,
+		h: 20
+	});
+
+	GAME.entities.push(snakeHead);
+}
+
+GAME.Update = function(elapsed_time)
+{
+
+	for(var i in GAME.entities)
+	{
+		GAME.entities[i].Update(elapsed_time, {keyboard: GAME.keyboard})
+	}
+}
+
+GAME.Draw = function(context)
+{
+	for(var i in GAME.entities)
+	{
+		GAME.entities[i].Draw(context);
+	}
+}
+
+GAME.Loop = function()
+{
+	GAME.lastTime = GAME.currentTime;
+	GAME.currentTime = +(new Date());
+	GAME.elapsedTime = GAME.currentTime - GAME.lastTime;
+
+	GAME.context.fillRect(0, 0, GAME.width, GAME.height);
+
+	GAME.Update(GAME.elapsedTime);
+	GAME.Draw(GAME.context);
+
+	requestAnimFrame(GAME.Loop);
+}
+
+window.onload = function()
+{
+	GAME.Setup();
+	GAME.Loop();
+}
+</script>
+</head>
+<body>
+	<canvas id="canvas" width="800" height="600"></canvas>
+</body>
+</html>
