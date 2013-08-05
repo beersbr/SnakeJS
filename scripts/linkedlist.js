@@ -37,6 +37,25 @@ var List = (function(list){
 
         }
 
+        // removes the first item from the list and returns the value.
+        // this function will change the head of the list.
+        this.pop_front = function()
+        {
+            var ret = this.head.value;
+            this.head = this.head.next;
+            this.head.prev = null;
+            return ret;
+        }
+
+        // removes the last node on the list and returns the value
+        this.pop = function()
+        {
+            var ret = this.tail.value;
+            this.tail = this.tail.prev;
+            this.tail.next = null;
+            return ret;
+        }
+
         this.push = function(value)
         {
             if(this.head == null)

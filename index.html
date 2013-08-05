@@ -64,7 +64,7 @@ function SnakeNode(args)
 	// this must be a SnakeNode
 	this.parent = args.parent || null;
 	this.next = args.child || null;
-	
+	this.verts = List.List();
 
 	this.Draw = function(context)
 	{
@@ -96,10 +96,14 @@ function SnakeNode(args)
 			throw "SnakeNode::Update(elapsed_time) => elapsed_time is falsey value";
 
 		if(args.vert != null)
-
+			this.verts.push(args.vert);
 
 		this.x += this.vx;
 		this.y += this.vy;
+
+		// pass the vert onto the next node.
+		var vert = this.verts.head.value;
+		
 	}
 }
 
