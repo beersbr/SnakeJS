@@ -64,7 +64,7 @@ function SnakeNode(args)
 	// this must be a SnakeNode
 	this.parent = args.parent || null;
 	this.next = args.child || null;
-	this.verts = List.List();
+	this.verts = new List.List();
 
 	this.Draw = function(context)
 	{
@@ -82,10 +82,6 @@ function SnakeNode(args)
 
 		context.fillStyle = "rgb(0, 0, 0)";
 		context.fillRect((this.x-1), (this.y-1), 2, 2);
-
-		context.fillStyle = "rgb(255, 0, 255)";
-		// context.
-
 		context.restore();
 
 	}
@@ -102,8 +98,19 @@ function SnakeNode(args)
 		this.y += this.vy;
 
 		// pass the vert onto the next node.
-		var vert = this.verts.head.value;
-		
+		if(this.verts.length > 0)
+		{
+			var vt = this.verts.head.value;
+			if(vt.x >= Math.min(this.x, this.x+this.vx) && vt.x <= Math.max(this.x, this.x+this.vx) 
+				&& vt.y >= Math.min(this.y, this.y+this.vy) && vt.y <= Math.max(this.y, this.y+this.vy))
+			{
+				console.log("NODE: ", this);
+				this.vx = vt.vx;
+				this.vy = vt.vy;
+				this.verts.pop_front();
+			}
+		}
+
 	}
 }
 
@@ -162,7 +169,7 @@ function SnakeNodeHead(args)
 
 		var vert = null;
 
-		if(args.keyboard.keyIsDown('a'))
+		if(args.keyboard.keyPressed('a'))
 		{
 			if(this.vy != 0.0)
 			{
@@ -175,10 +182,10 @@ function SnakeNodeHead(args)
 
 				// this is the position and velocity of the change for the snake, that way we know when 
 				// the head changed and what direction it wants to go.
-				vert = [{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}];
+				vert = {x: this.x, y: this.y, vx: this.vx, vy: this.vy};
 			}
 		}
-		if(args.keyboard.keyIsDown('d'))
+		if(args.keyboard.keyPressed('d'))
 		{
 			if(this.vy != 0.0)
 			{
@@ -189,10 +196,10 @@ function SnakeNodeHead(args)
 				head.vx = this.vx;
 				head.vy = this.vy;
 
-				vert = [{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}];
+				vert = {x: this.x, y: this.y, vx: this.vx, vy: this.vy};
 			}
 		}
-		if(args.keyboard.keyIsDown('w'))
+		if(args.keyboard.keyPressed('w'))
 		{
 			if(this.vx != 0.0)
 			{
@@ -203,10 +210,10 @@ function SnakeNodeHead(args)
 				head.vx = this.vx;
 				head.vy = this.vy;
 
-				vert = [{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}];
+				vert = {x: this.x, y: this.y, vx: this.vx, vy: this.vy};
 			}
 		}
-		if(args.keyboard.keyIsDown('s'))
+		if(args.keyboard.keyPressed('s'))
 		{
 			if(this.vx != 0.0)
 			{
@@ -217,7 +224,7 @@ function SnakeNodeHead(args)
 				head.vx = this.vx;
 				head.vy = this.vy;
 
-				vert = [{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}];
+				vert = {x: this.x, y: this.y, vx: this.vx, vy: this.vy};
 			}
 		}
 
@@ -228,7 +235,6 @@ function SnakeNodeHead(args)
 		}
 
 		args.vert = vert;
-
 		this.children.eachValue(function(n){
 			n.Update(elapsed_time, args);
 		});

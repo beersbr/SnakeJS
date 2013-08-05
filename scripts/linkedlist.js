@@ -44,6 +44,7 @@ var List = (function(list){
             var ret = this.head.value;
             this.head = this.head.next;
             this.head.prev = null;
+            this._length -= 1;
             return ret;
         }
 
@@ -53,6 +54,7 @@ var List = (function(list){
             var ret = this.tail.value;
             this.tail = this.tail.prev;
             this.tail.next = null;
+            this._length -= 1;
             return ret;
         }
 
