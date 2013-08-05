@@ -1,3 +1,32 @@
+COMMON = (function(_common)
+{
+  _common = {};
+
+  _common.parseURL = function()
+  {
+    // window.
+  }
+
+  _common.Tuple = function(o1, o2)
+  {
+    if(a === undefined)
+      throw "Tuple::Tuple() => first is undefined";
+    if(b === undefined)
+      throw "Tuple::Tuple() => second is undefined";
+
+    this.first = a;
+    this.second = b;
+
+    this.toString = function()
+    {
+      return ("("+first+", "+second+")");
+    }
+  }
+
+  return (_common);
+
+})();
+
 function Extend(context, obj, arguments){
     var constructor = context.constructor;
     context.__proto__ = new obj(arguments);
@@ -162,3 +191,5 @@ Math.randomInt = function(min, max)
     max = max || 0;
     return parseInt(min + (Math.random() * ((max - min) + 1)));
 }
+
+

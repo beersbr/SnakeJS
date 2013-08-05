@@ -69,6 +69,22 @@ function SnakeNode(args)
 	{
 		if(!(!!context))
 			throw "SnakeNode::Draw(context) => context is falsey value";
+
+		var x = this.parent.x,
+		y = this.parent.y;
+
+		context.save();
+		context.fillStyle = "rgb(255, 255, 255)";
+		context.fillRect((this.x-this.hw), (this.y-this.hh), this.w, this.h);
+
+		context.fillStyle = "rgb(0, 0, 0)";
+		context.fillRect((this.x-1), (this.y-1), 2, 2);
+
+		context.fillStyle = "rgb(255, 0, 255)";
+		context.
+
+		context.restore();
+
 	}
 
 	this.Update = function(elapsed_time, args)
@@ -95,12 +111,8 @@ function SnakeNodeHead(args)
 	this.vx = args.vx || 3.0;
 	this.vy = args.vy || 0.0;
 
-	this.children = [];
-
-	// this is a SnakeNode
-	this.lastChild = null;
-
-	this.vertecies = []; // x,y tuple
+	this.children = new List.List();
+	this.vertecies = new List.List(); // x,y tuple
 
 
 	this.Draw = function(context)
@@ -112,6 +124,9 @@ function SnakeNodeHead(args)
 		context.fillStyle = "rgb(255, 255, 255)";
 		context.fillRect((this.x-this.hw), (this.y-this.hh), this.w, this.h);
 
+		context.fillStyle = "rgb(0, 0, 0)";
+		context.fillRect((this.x-1), (this.y-1), 2, 2);
+
 		context.restore();
 	}
 
@@ -119,10 +134,10 @@ function SnakeNodeHead(args)
 	{
 		if(elapsed_time != 0)
 		if(!(!!elapsed_time))
-			throw "SnakeNodeHead::Update(elapsed_time, args) => elapsed_time is falsey value";
+			throw "SnakeNodeHead::Update(elapsed_time, args) => elapsed_time is falsey value.";
 
 		if(!(!!args.keyboard))
-			throw "SnakeNodeHead::Update(elapsed_time, args) => args.keyboard is falsey";
+			throw "SnakeNodeHead::Update(elapsed_time, args) => args.keyboard is falsey.";
 
 		this.x += this.vx;
 		this.y += this.vy;
@@ -134,6 +149,10 @@ function SnakeNodeHead(args)
 			{
 				this.vx = -3.0;
 				this.vy = 0.0;
+
+				// this is the position and velocity of the change for the snake, that way we know when 
+				// the head changed and what direction it wants to go.
+				this.vertecies.push([{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}]);
 			}
 		}
 		if(args.keyboard.keyIsDown('d'))
@@ -142,6 +161,8 @@ function SnakeNodeHead(args)
 			{
 				this.vx = 3.0;
 				this.vy = 0.0;
+
+				this.vertecies.push([{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}]);
 			}
 		}
 		if(args.keyboard.keyIsDown('w'))
@@ -150,6 +171,8 @@ function SnakeNodeHead(args)
 			{
 				this.vx = 0.0;
 				this.vy = -3.0;
+
+				this.vertecies.push([{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}]);
 			}
 		}
 		if(args.keyboard.keyIsDown('s'))
@@ -158,8 +181,50 @@ function SnakeNodeHead(args)
 			{
 				this.vx = 0.0;
 				this.vy = 3.0;
+
+				this.vertecies.push([{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}]);
 			}
 		}
+
+		// debugging
+		if(args.keyboard.keyIsDown('g'))
+		{
+			this.Grow(50);
+		}
+	}
+
+	this.Grow = function(length)
+	{
+		if(length == undefined || length < 0.0)
+			throw "SnakeNodeHead::Grow(length) => length is undefined or below zero."; 
+
+		var tail = this.children.tail;
+
+		var vx = tail.vx,
+		vy = tail.vy;
+
+		//we want to get the vector going the opposite direction of the last node.
+		vx = vx * -1;
+		vy = vy * -1;
+
+		// get the normal and then multiply by the length
+		var normal = sqrt(vx*vx + vy*vy);
+		vx /= normal;
+		vy /= normal;
+
+		vx *= length;
+		vy *= length;
+
+		var sn = new SnakeNode({
+			x: tail.x + vx,
+			y: tail.y + vy,
+			vx: tail.vx,
+			vy: tail.vy,
+			w: this.w,
+			h: this.h,
+			parent: tail,
+			next: null
+		});
 	}
 }
 
@@ -201,6 +266,11 @@ GAME.Update = function(elapsed_time)
 
 GAME.Draw = function(context)
 {
+	GAME.context.strokeStyle = "rgb(255, 0, 255)";
+	GAME.context.moveTo(0, 0);
+	GAME.context.lineTo(255, 255);
+	GAME.context.stroke()
+
 	for(var i in GAME.entities)
 	{
 		GAME.entities[i].Draw(context);
@@ -213,6 +283,8 @@ GAME.Loop = function()
 	GAME.currentTime = +(new Date());
 	GAME.elapsedTime = GAME.currentTime - GAME.lastTime;
 
+	// GAME.context.fillRect(0, 0, GAME.width, GAME.height);
+	GAME.context.clearRect(0, 0, GAME.width, GAME.height);
 	GAME.context.fillRect(0, 0, GAME.width, GAME.height);
 
 	GAME.Update(GAME.elapsedTime);
