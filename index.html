@@ -58,20 +58,23 @@ function SnakeNode(args)
 	this.w = args.w || 0;
 	this.h = args.h || 0;
 
-	this.hw = args.w || 0;
-	this.hh = args.h || 0;
+	this.hw = args.w/2 || 0;
+	this.hh = args.h/2 || 0;
 
 	// this must be a SnakeNode
 	this.parent = args.parent || null;
 	this.next = args.child || null;
+	
 
 	this.Draw = function(context)
 	{
 		if(!(!!context))
 			throw "SnakeNode::Draw(context) => context is falsey value";
 
-		var x = this.parent.x,
-		y = this.parent.y;
+		var parent = this.parent || this;
+
+		var x = parent.x,
+		y = parent.y;
 
 		context.save();
 		context.fillStyle = "rgb(255, 255, 255)";
@@ -81,7 +84,7 @@ function SnakeNode(args)
 		context.fillRect((this.x-1), (this.y-1), 2, 2);
 
 		context.fillStyle = "rgb(255, 0, 255)";
-		context.
+		// context.
 
 		context.restore();
 
@@ -91,6 +94,12 @@ function SnakeNode(args)
 	{
 		if(!(!!elapsed_time))
 			throw "SnakeNode::Update(elapsed_time) => elapsed_time is falsey value";
+
+		if(args.vert != null)
+
+
+		this.x += this.vx;
+		this.y += this.vy;
 	}
 }
 
@@ -114,20 +123,25 @@ function SnakeNodeHead(args)
 	this.children = new List.List();
 	this.vertecies = new List.List(); // x,y tuple
 
+	this.children.push(new SnakeNode({
+		x: this.x,
+		y: this.y,
+		w: this.w,
+		h: this.h,
+		vx: this.vx,
+		vy: this.vy, 
+		parent: null,
+		next: null
+	}));
 
 	this.Draw = function(context)
 	{
 		if(!(!!context))
 			throw "SnakeNodeHead::Draw(context) => context is falsey value";
 
-		context.save();
-		context.fillStyle = "rgb(255, 255, 255)";
-		context.fillRect((this.x-this.hw), (this.y-this.hh), this.w, this.h);
-
-		context.fillStyle = "rgb(0, 0, 0)";
-		context.fillRect((this.x-1), (this.y-1), 2, 2);
-
-		context.restore();
+		this.children.eachValue(function(n){
+			n.Draw(context);
+		});
 	}
 
 	this.Update = function(elapsed_time, args)
@@ -142,6 +156,7 @@ function SnakeNodeHead(args)
 		this.x += this.vx;
 		this.y += this.vy;
 
+		var vert = null;
 
 		if(args.keyboard.keyIsDown('a'))
 		{
@@ -150,9 +165,13 @@ function SnakeNodeHead(args)
 				this.vx = -3.0;
 				this.vy = 0.0;
 
+				var head = this.children.head.value;
+				head.vx = this.vx;
+				head.vy = this.vy;
+
 				// this is the position and velocity of the change for the snake, that way we know when 
 				// the head changed and what direction it wants to go.
-				this.vertecies.push([{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}]);
+				vert = [{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}];
 			}
 		}
 		if(args.keyboard.keyIsDown('d'))
@@ -162,7 +181,11 @@ function SnakeNodeHead(args)
 				this.vx = 3.0;
 				this.vy = 0.0;
 
-				this.vertecies.push([{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}]);
+				var head = this.children.head.value;
+				head.vx = this.vx;
+				head.vy = this.vy;
+
+				vert = [{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}];
 			}
 		}
 		if(args.keyboard.keyIsDown('w'))
@@ -172,7 +195,11 @@ function SnakeNodeHead(args)
 				this.vx = 0.0;
 				this.vy = -3.0;
 
-				this.vertecies.push([{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}]);
+				var head = this.children.head.value;
+				head.vx = this.vx;
+				head.vy = this.vy;
+
+				vert = [{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}];
 			}
 		}
 		if(args.keyboard.keyIsDown('s'))
@@ -182,15 +209,25 @@ function SnakeNodeHead(args)
 				this.vx = 0.0;
 				this.vy = 3.0;
 
-				this.vertecies.push([{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}]);
+				var head = this.children.head.value;
+				head.vx = this.vx;
+				head.vy = this.vy;
+
+				vert = [{x: this.x, y: this.y}, {vx: this.vx, vy: this.vy}];
 			}
 		}
 
 		// debugging
-		if(args.keyboard.keyIsDown('g'))
+		if(args.keyboard.keyPressed('g'))
 		{
 			this.Grow(50);
 		}
+
+		args.vert = vert;
+
+		this.children.eachValue(function(n){
+			n.Update(elapsed_time, args);
+		});
 	}
 
 	this.Grow = function(length)
@@ -198,7 +235,7 @@ function SnakeNodeHead(args)
 		if(length == undefined || length < 0.0)
 			throw "SnakeNodeHead::Grow(length) => length is undefined or below zero."; 
 
-		var tail = this.children.tail;
+		var tail = this.children.tail.value;
 
 		var vx = tail.vx,
 		vy = tail.vy;
@@ -208,7 +245,7 @@ function SnakeNodeHead(args)
 		vy = vy * -1;
 
 		// get the normal and then multiply by the length
-		var normal = sqrt(vx*vx + vy*vy);
+		var normal = Math.sqrt(vx*vx + vy*vy);
 		vx /= normal;
 		vy /= normal;
 
@@ -225,6 +262,8 @@ function SnakeNodeHead(args)
 			parent: tail,
 			next: null
 		});
+
+		this.children.push(sn);
 	}
 }
 
@@ -257,7 +296,6 @@ GAME.Setup = function()
 
 GAME.Update = function(elapsed_time)
 {
-
 	for(var i in GAME.entities)
 	{
 		GAME.entities[i].Update(elapsed_time, {keyboard: GAME.keyboard})
@@ -266,11 +304,6 @@ GAME.Update = function(elapsed_time)
 
 GAME.Draw = function(context)
 {
-	GAME.context.strokeStyle = "rgb(255, 0, 255)";
-	GAME.context.moveTo(0, 0);
-	GAME.context.lineTo(255, 255);
-	GAME.context.stroke()
-
 	for(var i in GAME.entities)
 	{
 		GAME.entities[i].Draw(context);
@@ -289,6 +322,8 @@ GAME.Loop = function()
 
 	GAME.Update(GAME.elapsedTime);
 	GAME.Draw(GAME.context);
+
+	GAME.keyboard.cleaner();
 
 	requestAnimFrame(GAME.Loop);
 }
