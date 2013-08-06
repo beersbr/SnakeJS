@@ -92,24 +92,55 @@ function SnakeNode(args)
 			throw "SnakeNode::Update(elapsed_time) => elapsed_time is falsey value";
 
 		if(args.vert != null)
+		{
 			this.verts.push(args.vert);
-
-		this.x += this.vx;
-		this.y += this.vy;
+		}
 
 		// pass the vert onto the next node.
 		if(this.verts.length > 0)
 		{
 			var vt = this.verts.head.value;
-			if(vt.x >= Math.min(this.x, this.x+this.vx) && vt.x <= Math.max(this.x, this.x+this.vx) 
-				&& vt.y >= Math.min(this.y, this.y+this.vy) && vt.y <= Math.max(this.y, this.y+this.vy))
+			// console.log(vt, this);
+
+			var vn_x = vt.x - this.x,
+				vn_y = vt.y - this.y;
+
+			// console.log(vn_x, vn_y, this.vx, this.vy);
+
+			if(vn_x != 0)
 			{
-				console.log("NODE: ", this);
+				if(Math.abs(vn_x) < Math.abs(this.vx))
+				{
+					// console.log(vn_x);
+					var n = Math.abs(this.vx) - Math.abs(vn_x);
+					// console.log(n);
+					this.vx = vt.vx;
+					this.vy = vt.vy;
+					this.x += vn_x;
+					this.verts.pop_front();
+				}
+			}
+			else if(vn_y != 0)
+			{
+				if(Math.abs(vn_y) < Math.abs(this.vy))
+				{
+					this.vx = vt.vx;
+					this.vy = vt.vy;
+					this.y += vn_y;
+					this.verts.pop_front();
+				}
+			}
+			else if(vn_x == 0 && vn_y == 0)
+			{
 				this.vx = vt.vx;
 				this.vy = vt.vy;
 				this.verts.pop_front();
 			}
+
 		}
+
+		this.x += this.vx;
+		this.y += this.vy;
 
 	}
 }
@@ -163,9 +194,6 @@ function SnakeNodeHead(args)
 
 		if(!(!!args.keyboard))
 			throw "SnakeNodeHead::Update(elapsed_time, args) => args.keyboard is falsey.";
-
-		this.x += this.vx;
-		this.y += this.vy;
 
 		var vert = null;
 
@@ -228,11 +256,12 @@ function SnakeNodeHead(args)
 			}
 		}
 
+		this.x += this.vx;
+		this.y += this.vy;
+
 		// debugging
 		if(args.keyboard.keyPressed('g'))
-		{
-			this.Grow(50);
-		}
+			this.Grow(20);
 
 		args.vert = vert;
 		this.children.eachValue(function(n){
@@ -306,6 +335,12 @@ GAME.Setup = function()
 
 GAME.Update = function(elapsed_time)
 {
+	if(GAME.keyboard.keyPressed('p'))
+		GAME.paused = !GAME.paused;
+
+	if(GAME.paused)
+		return;
+
 	for(var i in GAME.entities)
 	{
 		GAME.entities[i].Update(elapsed_time, {keyboard: GAME.keyboard})

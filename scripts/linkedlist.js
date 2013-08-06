@@ -41,16 +41,13 @@ var List = (function(list){
         // this function will change the head of the list.
         this.pop_front = function()
         {
-            if(this.head != null)
+            if(this.head == null)
                 return null;
 
             var ret = this.head.value;
             this.head = this.head.next;
-
-            if(this.head)
-                this.head.prev = null;
-            
             this._length -= 1;
+            
             return ret;
         }
 
