@@ -2,6 +2,24 @@ COMMON = (function(_common)
 {
   _common = {};
 
+  _common.SimpleClone = function(obj)
+  {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  _common.Clone = function(obj)
+  {
+    if(obj == null || typeof(obj) != 'object')
+        return obj;
+
+    var temp = obj.constructor();
+
+    for(var key in obj)
+        temp[key] = clone(obj[key]);
+
+    return temp;
+  }
+
   _common.parseURL = function()
   {
     // window.

@@ -1,6 +1,13 @@
 <html>
 <head>
 	<title>Snake</title>
+<style type="text/css">
+canvas{
+	border: 5px dashed black;
+}
+</style>
+
+<script type="text/javascript" src="./scripts/common.js"></script>
 <script type="text/javascript" src="./scripts/linkedlist.js"></script>
 <script type="text/javascript" src="./scripts/keyhandler.js"></script>
 <script type="text/javascript">
@@ -301,6 +308,8 @@ function SnakeNodeHead(args)
 			parent: tail,
 			next: null
 		});
+
+		// sn.verts = COMMON.Clone(tail.verts);
 
 		this.children.push(sn);
 	}
